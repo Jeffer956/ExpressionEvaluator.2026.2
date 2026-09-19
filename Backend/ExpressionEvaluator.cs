@@ -1,5 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Reflection.Metadata;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Backend;
 
@@ -11,48 +11,51 @@ public static class ExpressionEvaluator
     {
         var posfix = string.Empty;
         var stack = new Stack<char>();
-        foreach (var item in infix)
+
+        for (int i = 0; i < infix.Length; i++)
         {
+            var item = infix[i];
+
             if (IsOperator(item))
             {
                 if (item == ')')
                 {
                     var ope = stack.Pop();
-                    while(ope != '(')
+                    while (ope != '(')
                     {
-                        posfix += ope;
+                        posfix += ope + " "; 
                         ope = stack.Pop();
                     }
                 }
                 else
                 {
-                    if (stack.Count == 0)
+                   
+                    while (stack.Count > 0 && PriorityInfix(item) <= PriorityStack(stack.Peek()))
                     {
-                        stack.Push(item);
+                        posfix += stack.Pop() + " ";
                     }
-                    else
-                    {
-                        if (PriorityInfix(item) > PriorityStack(stack.Peek()))
-                        {
-                            stack.Push(item);
-                        }
-                        else
-                        {
-                            posfix += stack.Pop();
-                            stack.Push(item);
-                        }
-                    }
+                    stack.Push(item);
                 }
             }
             else
             {
-                posfix += item;
+                
+                string number = "";
+                while (i < infix.Length && (char.IsDigit(infix[i]) || infix[i] == '.'))
+                {
+                    number += infix[i];
+                    i++;
+                }
+                i--;
+                posfix += number + " ";
             }
         }
-        do
+
+        while (stack.Count != 0)
         {
-            posfix += stack.Pop();
-        } while (stack.Count != 0);
+            posfix += stack.Pop() + " ";
+        }
+
         return posfix;
     }
 
@@ -83,17 +86,22 @@ public static class ExpressionEvaluator
     private static double EvalutePostfix(string postfix)
     {
         var stack = new Stack<double>();
-        foreach (var item in postfix)
+
+        
+        var items = postfix.Trim().Split(' ');
+
+        foreach (var item in items)
         {
-            if (IsOperator(item))
+            
+            if (item.Length == 1 && IsOperator(item[0]))
             {
                 var ope2 = stack.Pop();
                 var ope1 = stack.Pop();
-                stack.Push(Calculate(ope1, ope2, item));
+                stack.Push(Calculate(ope1, ope2, item[0]));
             }
             else
             {
-                stack.Push(char.GetNumericValue(item));
+                stack.Push(double.Parse(item));
             }
         }
         return stack.Pop();

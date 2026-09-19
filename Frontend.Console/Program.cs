@@ -10,4 +10,4 @@ var infix3 = "4*7^(1/3)*7*((1+9)/3*7^4)";
 Console.WriteLine($"Infix = {infix3}, Result = {ExpressionEvaluator.Evalute(infix3):N5}"); // 428,675.12518474100 
 
 var infix4 = "144^(1/2)";
-Console.WriteLine($"Infix = {infix4}, Result = {ExpressionEvaluator.Evalute(infix4):N5}"); // 12
+Console.WriteLine($"Infix = {infix4}, Result = {ExpressionEvaluator.Evalute(infix4)}"); // 12
