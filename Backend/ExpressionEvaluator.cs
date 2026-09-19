@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Backend;
-
+﻿namespace Backend;
 public static class ExpressionEvaluator
 {
     public static double Evalute(string infix) => EvalutePostfix(ToPostfix(infix));
@@ -12,6 +8,7 @@ public static class ExpressionEvaluator
         var posfix = string.Empty;
         var stack = new Stack<char>();
 
+        // Using a for loop instead of foreach to control the index 'i' when reading multi-digit numbers
         for (int i = 0; i < infix.Length; i++)
         {
             var item = infix[i];
@@ -23,38 +20,49 @@ public static class ExpressionEvaluator
                     var ope = stack.Pop();
                     while (ope != '(')
                     {
-                        posfix += ope + " "; 
+                        posfix += ope + " "; // Added a space as a delimiter between tokens
                         ope = stack.Pop();
                     }
                 }
                 else
                 {
-                   
-                    while (stack.Count > 0 && PriorityInfix(item) <= PriorityStack(stack.Peek()))
+                    if (stack.Count == 0)
                     {
-                        posfix += stack.Pop() + " ";
+                        stack.Push(item);
                     }
-                    stack.Push(item);
+                    else
+                    {
+                        if (PriorityInfix(item) > PriorityStack(stack.Peek()))
+                        {
+                            stack.Push(item);
+                        }
+                        else
+                        {
+                            posfix += stack.Pop() + " "; // Added a space as a delimiter between tokens
+                            stack.Push(item);
+                        }
+                    }
                 }
             }
             else
             {
-                
+                // Accumulate consecutive digits or decimal points into a single number string
                 string number = "";
                 while (i < infix.Length && (char.IsDigit(infix[i]) || infix[i] == '.'))
                 {
                     number += infix[i];
                     i++;
                 }
-                i--;
-                posfix += number + " ";
+                i--; // Step back one position since the outer 'for' loop will increment 'i'
+
+                posfix += number + " "; // Append the full number followed by a space
             }
         }
 
-        while (stack.Count != 0)
+        do
         {
-            posfix += stack.Pop() + " ";
-        }
+            posfix += stack.Pop() + " "; // Added a space as a delimiter between tokens
+        } while (stack.Count != 0);
 
         return posfix;
     }
@@ -87,13 +95,12 @@ public static class ExpressionEvaluator
     {
         var stack = new Stack<double>();
 
-        
+        // Split the postfix string by spaces to get each complete number or operator token
         var items = postfix.Trim().Split(' ');
 
         foreach (var item in items)
         {
-            
-            if (item.Length == 1 && IsOperator(item[0]))
+            if (IsOperator(item[0]) && item.Length == 1)
             {
                 var ope2 = stack.Pop();
                 var ope1 = stack.Pop();
@@ -101,9 +108,11 @@ public static class ExpressionEvaluator
             }
             else
             {
+                // Convert full number strings (including multi-digit and decimals) to double
                 stack.Push(double.Parse(item));
             }
         }
+
         return stack.Pop();
     }
 
